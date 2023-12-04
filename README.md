@@ -6,6 +6,8 @@ but limited due to cloud quota
 each loadtest container will run k6 with 20000 virtual users for 1 minute
 try adjust docker-compose.yml to run more loadtest containers (currently replicas: 7)
 
+currently max request achieved is 20000 \* 7 = 140000
+
 ## steps to reproduce
 
 1. create VMs on google cloud platform with terraform
