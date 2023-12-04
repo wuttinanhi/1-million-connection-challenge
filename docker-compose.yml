@@ -52,16 +52,18 @@ services:
     networks:
       - no-internet
     deploy:
-      # mode: replicated
-      mode: replicated-job
-      replicas: 100
+      mode: replicated
+      # mode: replicated-job
+      replicas: 50
       placement:
         constraints:
           - node.role == worker
       resources:
         limits:
           cpus: '0.50'
-          memory: 2G
+          memory: 4G
         reservations:
           cpus: '0.50'
           memory: 1G
+      restart_policy:
+        condition: none
