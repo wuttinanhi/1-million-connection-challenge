@@ -6,11 +6,15 @@ volumes:
 
 
 networks:
-  backend-network:
-
+  no-internet:
+    internal: true
+    driver: bridge
+  exposed:
+    internal: false
+    driver: bridge
 
 services:
-  app-exposed:
+  app:
     image: app
     build:
       context: .
@@ -20,51 +24,52 @@ services:
     ports:
       - 3000:3000
     networks:
-      - backend-network
+      - no-internet
+      - exposed
 
-  app-internal:
-    image: app
-    build:
-      context: .
-      dockerfile: ./Dockerfile
-    environment:
-      REDIS_HOST: redis:6379
-    networks:
-      - backend-network
-    deploy:
-      mode: replicated
-      replicas: 10
-      resources:
-        limits:
-          cpus: '0.25'
-          memory: 512M
-        reservations:
-          cpus: '0.25'
-          memory: 256M
+  # app-internal:
+  #   image: app
+  #   build:
+  #     context: .
+  #     dockerfile: ./Dockerfile
+  #   environment:
+  #     REDIS_HOST: redis:6379
+  #   networks:
+  #     - no-internet
+  #   deploy:
+  #     mode: replicated
+  #     replicas: 1
+  #     resources:
+  #       limits:
+  #         cpus: '0.25'
+  #         memory: 512M
+  #       reservations:
+  #         cpus: '0.25'
+  #         memory: 256M
 
-  redis:
-    image: docker.io/bitnami/redis:7.2
-    environment:
-      # - REDIS_PASSWORD=redis_password
-      - ALLOW_EMPTY_PASSWORD=yes
-      - REDIS_DISABLE_COMMANDS=FLUSHDB,FLUSHALL
-      # use memory instead of disk
-      - REDIS_APPENDONLY=no
-    ports:
-      - '6379:6379'
-    volumes:
-      - 'redis_data:/bitnami/redis/data'
-    networks:
-      - backend-network
+  # redis:
+  #   image: docker.io/bitnami/redis:7.2
+  #   environment:
+  #     # - REDIS_PASSWORD=redis_password
+  #     - ALLOW_EMPTY_PASSWORD=yes
+  #     - REDIS_DISABLE_COMMANDS=FLUSHDB,FLUSHALL
+  #     # use memory instead of disk
+  #     - REDIS_APPENDONLY=no
+  #   ports:
+  #     - '6379:6379'
+  #   volumes:
+  #     - 'redis_data:/bitnami/redis/data'
+  #   networks:
+  #     - no-internet
 
-  redisinsight:
-    image: redislabs/redisinsight:latest
-    ports:
-      - '8001:8001'
-    volumes:
-      - 'redis_insight_data:/db'
-    networks:
-      - backend-network
+  # redisinsight:
+  #   image: redislabs/redisinsight:latest
+  #   ports:
+  #     - '8001:8001'
+  #   volumes:
+  #     - 'redis_insight_data:/db'
+  #   networks:
+  #     - no-internet
 
   loadtest:
     image: "loadtest"
@@ -72,18 +77,31 @@ services:
       context: loadtest
       dockerfile: ./Dockerfile
     environment:
-      LOADTEST_URL: "http://app-internal:3000/add"
-      LOADTEST_VUS: 50000
+      LOADTEST_URL: "http://app:3000/add"
+      LOADTEST_VUS: 10000
       LOADTEST_ITERATIONS: 1000000
       LOADTEST_DURATION: "5m"
     depends_on:
-      - redis
-      - app-internal
+      # - redis
+      - app
     networks:
-      - backend-network
-
-  ubuntu:
-    image: ubuntu
-    command: sleep infinity
-    networks:
-      - backend-network
+      - no-internet
+    # 10 replicas
+    deploy:
+      mode: replicated
+      replicas: 10
+      placement:
+        constraints:
+          - node.role == worker
+      resources:
+        limits:
+          cpus: '0.50'
+          memory: 2G
+        reservations:
+          cpus: '0.50'
+          memory: 1G
+  # ubuntu:
+  #   image: ubuntu
+  #   command: sleep infinity
+  #   networks:
+  #     - no-internet
