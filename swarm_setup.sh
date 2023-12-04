@@ -1,5 +1,7 @@
 #!/bin/bash
 
+export SSH_OPTS="-o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null"
+
 # Get manager IP from Terraform output as JSON-like string
 manager_ips_json=$(terraform output -json manager_first_node_private_ip)
 
@@ -32,7 +34,7 @@ initialize_swarm() {
   echo "Initializing swarm on $manager_external_ip"
 
   # Connect to the manager node and initialize Docker swarm
-  # ssh-keygen -f "/home/bb/.ssh/known_hosts" -R "$manager_external_ip"
+  ssh-keygen -f "/home/$USER/.ssh/known_hosts" -R "$manager_external_ip"
   local cmd="docker swarm init --advertise-addr $manager_internal_ip"
   echo "Executing command: $cmd"
   sshpass -p "$vm_password" ssh -o StrictHostKeyChecking=no $vm_username@$manager_external_ip "$cmd"
@@ -44,8 +46,7 @@ join_manager_to_swarm() {
   local token=$2
 
   # Connect to the manager node and join the swarm as manager
-  # ssh-keygen -f "/home/bb/.ssh/known_hosts" -R "$mip"
-  # ssh-keygen -f "/home/bb/.ssh/known_hosts" -R "$manager_internal_ip"
+  ssh-keygen -f "/home/$USER/.ssh/known_hosts" -R "$mip"
   sshpass -p "$vm_password" ssh -o StrictHostKeyChecking=no $vm_username@$mip "docker swarm join --token $token $manager_internal_ip:2377"
 }
 
@@ -69,8 +70,7 @@ join_worker_to_swarm() {
   local manager_ip=$2
 
   # Connect to the worker node and join the swarm using sshpass
-  # ssh-keygen -f "/home/bb/.ssh/known_hosts" -R "$worker_ip"
-  # ssh-keygen -f "/home/bb/.ssh/known_hosts" -R "$worker_ip"
+  ssh-keygen -f "/home/$USER/.ssh/known_hosts" -R "$worker_ip"
 
   local worker_token=$(sshpass -p "$vm_password" ssh -o StrictHostKeyChecking=no $vm_username@$manager_external_ip 'docker swarm join-token worker -q')
   echo "Worker token: $worker_token"

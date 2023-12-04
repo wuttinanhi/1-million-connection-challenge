@@ -23,12 +23,12 @@ variable "GOOGLE_ZONE" {
 
 variable "DOCKER_SWARM_MANAGER_COUNT" {
   type = number
-  default = 3
+  default = 2
 }
 
 variable "DOCKER_SWARM_WORKER_COUNT" {
   type = number
-  default = 3
+  default = 2
 }
 
 terraform {
@@ -136,7 +136,7 @@ EOT
 }
 
 resource "google_compute_instance" "workers" {
-    machine_type = "n1-standard-2"
+    machine_type = "n1-highmem-8"
     name         = "worker-${count.index + 1}"
     count        = var.DOCKER_SWARM_WORKER_COUNT
     zone = var.GOOGLE_ZONE
