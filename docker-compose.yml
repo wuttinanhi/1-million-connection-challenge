@@ -44,9 +44,9 @@ services:
     image: docker.io/wuttinanhi/1millionconnectionchallenge-loadtest:latest
     environment:
       LOADTEST_URL: "http://app:3000/add"
-      LOADTEST_VUS: 10000
-      LOADTEST_ITERATIONS: 1000000
-      LOADTEST_DURATION: "5m"
+      # LOADTEST_VUS: 10000
+      # LOADTEST_ITERATIONS: 1000000
+      # LOADTEST_DURATION: "5m"
     depends_on:
       - app
     networks:
@@ -54,16 +54,16 @@ services:
     deploy:
       mode: replicated
       # mode: replicated-job
-      replicas: 14
+      replicas: 7
       placement:
         constraints:
           - node.role == worker
       resources:
         limits:
           cpus: '1.00'
-          memory: 4G
+          memory: 10G
         reservations:
           cpus: '1.00'
-          memory: 1G
+          memory: 2G
       restart_policy:
         condition: none

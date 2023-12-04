@@ -17,7 +17,7 @@ export const options = {
   //   { duration: "1m", target: 0 },
   // ],
 
-  vus: 50000,
+  vus: 20000,
   duration: "1m",
 };
 
