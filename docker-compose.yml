@@ -7,18 +7,17 @@ volumes:
 
 networks:
   no-internet:
-    internal: true
-    driver: bridge
+    # internal: true
+    # driver: bridge
+    driver: overlay
   exposed:
-    internal: false
-    driver: bridge
+    # internal: false
+    # driver: overlay
+    driver: overlay
 
 services:
   app:
-    image: app
-    build:
-      context: .
-      dockerfile: ./Dockerfile
+    image: docker.io/wuttinanhi/1millionconnectionchallenge-app:latest
     environment:
       REDIS_HOST: redis:6379
     ports:
@@ -26,70 +25,36 @@ services:
     networks:
       - no-internet
       - exposed
-
-  # app-internal:
-  #   image: app
-  #   build:
-  #     context: .
-  #     dockerfile: ./Dockerfile
-  #   environment:
-  #     REDIS_HOST: redis:6379
-  #   networks:
-  #     - no-internet
-  #   deploy:
-  #     mode: replicated
-  #     replicas: 1
-  #     resources:
-  #       limits:
-  #         cpus: '0.25'
-  #         memory: 512M
-  #       reservations:
-  #         cpus: '0.25'
-  #         memory: 256M
-
-  # redis:
-  #   image: docker.io/bitnami/redis:7.2
-  #   environment:
-  #     # - REDIS_PASSWORD=redis_password
-  #     - ALLOW_EMPTY_PASSWORD=yes
-  #     - REDIS_DISABLE_COMMANDS=FLUSHDB,FLUSHALL
-  #     # use memory instead of disk
-  #     - REDIS_APPENDONLY=no
-  #   ports:
-  #     - '6379:6379'
-  #   volumes:
-  #     - 'redis_data:/bitnami/redis/data'
-  #   networks:
-  #     - no-internet
-
-  # redisinsight:
-  #   image: redislabs/redisinsight:latest
-  #   ports:
-  #     - '8001:8001'
-  #   volumes:
-  #     - 'redis_insight_data:/db'
-  #   networks:
-  #     - no-internet
+    deploy:
+      # mode: global
+      mode: replicated
+      replicas: 1
+      placement:
+        constraints:
+          - node.role == manager
+      resources:
+        limits:
+          cpus: '1.00'
+          memory: 5G
+        reservations:
+          cpus: '1.00'
+          memory: 1G
 
   loadtest:
-    image: "loadtest"
-    build:
-      context: loadtest
-      dockerfile: ./Dockerfile
+    image: docker.io/wuttinanhi/1millionconnectionchallenge-loadtest:latest
     environment:
       LOADTEST_URL: "http://app:3000/add"
       LOADTEST_VUS: 10000
       LOADTEST_ITERATIONS: 1000000
       LOADTEST_DURATION: "5m"
     depends_on:
-      # - redis
       - app
     networks:
       - no-internet
-    # 10 replicas
     deploy:
-      mode: replicated
-      replicas: 10
+      # mode: replicated
+      mode: replicated-job
+      replicas: 100
       placement:
         constraints:
           - node.role == worker
@@ -100,8 +65,3 @@ services:
         reservations:
           cpus: '0.50'
           memory: 1G
-  # ubuntu:
-  #   image: ubuntu
-  #   command: sleep infinity
-  #   networks:
-  #     - no-internet

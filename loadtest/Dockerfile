@@ -1,3 +1,3 @@
 FROM grafana/k6
-COPY . .
+COPY loadtest.js loadtest.js
 CMD [ "run", "loadtest.js" ]
