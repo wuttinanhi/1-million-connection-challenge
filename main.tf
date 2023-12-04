@@ -23,12 +23,12 @@ variable "GOOGLE_ZONE" {
 
 variable "DOCKER_SWARM_MANAGER_COUNT" {
   type = number
-  default = 2
+  default = 1
 }
 
 variable "DOCKER_SWARM_WORKER_COUNT" {
   type = number
-  default = 2
+  default = 6
 }
 
 terraform {
@@ -136,7 +136,7 @@ EOT
 }
 
 resource "google_compute_instance" "workers" {
-    machine_type = "n1-highmem-8"
+    machine_type = "n1-highmem-2"
     name         = "worker-${count.index + 1}"
     count        = var.DOCKER_SWARM_WORKER_COUNT
     zone = var.GOOGLE_ZONE
@@ -186,8 +186,6 @@ docker run -it -d -p 8080:8080 -v /var/run/docker.sock:/var/run/docker.sock dock
 EOT
     }
 }
-
-
 
 output "manager_ip" {
     value = "${google_compute_instance.managers[*].network_interface.0.access_config.0.nat_ip}"

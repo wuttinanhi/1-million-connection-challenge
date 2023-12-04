@@ -12,10 +12,13 @@ export const options = {
   // iterations: LOADTEST_ITERATIONS,
   // duration: LOADTEST_DURATION,
 
-  stages: [
-    { duration: "1m", target: 10000 },
-    { duration: "1m", target: 0 },
-  ],
+  // stages: [
+  //   { duration: "1m", target: 10000 },
+  //   { duration: "1m", target: 0 },
+  // ],
+
+  vus: 50000,
+  duration: "1m",
 };
 
 const status500Rate = new Counter("status_500_rate");
