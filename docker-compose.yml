@@ -54,7 +54,7 @@ services:
     deploy:
       mode: replicated
       # mode: replicated-job
-      replicas: 10
+      replicas: 14
       placement:
         constraints:
           - node.role == worker

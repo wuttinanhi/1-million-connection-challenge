@@ -28,7 +28,7 @@ variable "DOCKER_SWARM_MANAGER_COUNT" {
 
 variable "DOCKER_SWARM_WORKER_COUNT" {
   type = number
-  default = 6
+  default = 7
 }
 
 terraform {
